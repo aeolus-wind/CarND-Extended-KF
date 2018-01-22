@@ -1,6 +1,9 @@
 #ifndef KALMAN_FILTER_H_
 #define KALMAN_FILTER_H_
 #include "Eigen/Dense"
+#include <exception>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 class KalmanFilter {
 public:
@@ -50,6 +53,9 @@ public:
    * using the process model
    * @param delta_T Time between k and k+1 in s
    */
+  void PredictDeterministic();
+  void PredictNonDeterministic();
+
   void Predict();
 
   /**
@@ -64,6 +70,23 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+  Eigen::MatrixXd GenerateEigenDecomposition(const Eigen::MatrixXd &Q);
+
+  Eigen::VectorXd DrawFromMultivariateGaussianMeanZero(const Eigen::MatrixXd &Q);
+
+  void MatrixCorrectDimension(const Eigen::MatrixXd& check, int expectedRows, int expectedCols);
+  void VectorCorrectDimension(const Eigen::VectorXd& check, int expectedSize);
+
+  Eigen::VectorXd TransformCartesianToPolar(const Eigen::VectorXd &CartesianVector);
+};
+
+
+
+
+class NotPositiveSemidefinite : public std::exception {
+	virtual const char* what() const throw() {
+		return "Input matrix not positive semidefinite";
+	}
 };
 
 #endif /* KALMAN_FILTER_H_ */
