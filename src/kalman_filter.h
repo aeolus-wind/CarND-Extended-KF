@@ -78,10 +78,17 @@ public:
   void VectorCorrectDimension(const Eigen::VectorXd& check, int expectedSize);
 
   Eigen::VectorXd TransformCartesianToPolar(const Eigen::VectorXd &CartesianVector);
+
+  Eigen::VectorXd CartesianToPolar(double px, double py, double vx, double vy);
+
+  Eigen::VectorXd TransformPolarToCartesian(const Eigen::VectorXd &PolarVector);
+	
+  
 };
 
 
 
+double NormalizeRadianBetweenPiMinusPi( double phi);
 
 class NotPositiveSemidefinite : public std::exception {
 	virtual const char* what() const throw() {

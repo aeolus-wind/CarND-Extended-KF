@@ -69,8 +69,16 @@ void InputHasNoNulls(const VectorXd& x_state) {
 
 }
 
+
+inline bool isEqual(double x, double y) {
+	//Taken from https://stackoverflow.com/questions/19837576/comparing-floating-point-number-to-zero
+	const double epsilon = 1e-9;
+	return std::abs(x - y) <= epsilon * std::abs(x);
+}
+
+
 void CannotDivideByZero(const double r2) {
-	if (r2 == 0)
+	if (isEqual( r2,0))
 		throw ZeroDivideException();
 }
 

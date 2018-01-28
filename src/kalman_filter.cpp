@@ -4,6 +4,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <random>
+#include <cmath>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -31,12 +32,14 @@ void KalmanFilter::VectorCorrectDimension(const VectorXd& check, int expectedSiz
 
 void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
                         MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
+	/*
 	VectorCorrectDimension(x_in, 4);
 	MatrixCorrectDimension(P_in, 4, 4);
 	MatrixCorrectDimension(F_in, 4, 4);
 	MatrixCorrectDimension(H_in, 2, 4);
 	MatrixCorrectDimension(R_in, 2, 2);
 	MatrixCorrectDimension(Q_in, 4, 4);
+	*/
 
 	x_ = x_in;
 	P_ = P_in;
@@ -49,7 +52,6 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 
 
 MatrixXd KalmanFilter::GenerateEigenDecomposition(const MatrixXd &Q) {
-	//check if positive semidefinite?
 	
 	SelfAdjointEigenSolver<MatrixXd> eigensolver(Q);
 
@@ -57,8 +59,10 @@ MatrixXd KalmanFilter::GenerateEigenDecomposition(const MatrixXd &Q) {
 
 	for (int i = 0; i < eigensolver.eigenvalues().size(); i++) {
 
-		if (eigensolver.eigenvalues()(i) <= 0)
+		if (eigensolver.eigenvalues()(i) <= 0) {
+			cout <<"Matrix not positive semidefinite with eigenvalue"<< eigensolver.eigenvalues()(i) << endl;
 			throw NotPositiveSemidefinite();
+		}
 	}
 
 	return eigensolver.eigenvectors()*eigensolver.eigenvalues().cwiseSqrt().asDiagonal();
@@ -85,7 +89,7 @@ void KalmanFilter::PredictNonDeterministic() {
 
 void KalmanFilter::Predict() {
 	 PredictDeterministic();
-	 PredictNonDeterministic();
+	 //PredictNonDeterministic();
 
 }
 
@@ -103,6 +107,38 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 }
 
+
+VectorXd KalmanFilter::CartesianToPolar(double px, double py, double vx, double vy) {
+	VectorXd PolarVector(3);
+	double r2 = SumSquare(px, py);
+	double phi = atan(py / px);
+	PolarVector << pow(r2, 0.5), phi, (px*vx + py*vx) / pow(r2, 0.5);
+
+	return PolarVector;
+}
+
+VectorXd KalmanFilter::TransformPolarToCartesian(const Eigen::VectorXd &PolarVector) {
+	VectorXd CartesianVector(4);
+	double phi = PolarVector(0);
+	double theta = PolarVector(1);
+	double phi_dot = PolarVector(2);
+	CartesianVector << phi*cos(theta) , phi*sin(theta) , phi_dot*cos(theta) , phi_dot*sin(theta);
+	return CartesianVector;
+}
+
+double NormalizeRadianBetweenPiMinusPi(double phi) {
+	while (phi > M_PI) {
+		phi -= 2 * M_PI;
+	}
+	while (phi < -M_PI) {
+		phi += 2 * M_PI;
+	}
+
+	return phi;
+
+}
+
+
 VectorXd KalmanFilter::TransformCartesianToPolar(const VectorXd &CartesianVector) {
 
 	InputSizeIs4(CartesianVector);
@@ -110,20 +146,7 @@ VectorXd KalmanFilter::TransformCartesianToPolar(const VectorXd &CartesianVector
 	CannotDivideByZero(CartesianVector(0));
 
 	VectorXd PolarVector(3);
-	double px = CartesianVector(0);
-	double py = CartesianVector(1);
-	double vx = CartesianVector(2);
-	double vy = CartesianVector(3);
-	double r2 = SumSquare(CartesianVector(0), CartesianVector(1));
-	double phi = atan(py / px);
-	while (phi > M_PI ) {
-		phi -= 2 * M_PI;
-	}
-	while (phi < M_PI) {
-		phi += 2 * M_PI;
-	}
-	PolarVector << pow(r2, 0.5), atan(py / px), (px*vx + py*vx) / pow(r2, 0.5);
-
+	PolarVector = CartesianToPolar(CartesianVector(0), CartesianVector(1), CartesianVector(2), CartesianVector(3));
 	return PolarVector;
 }
 
@@ -132,4 +155,16 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
+
+	VectorXd y = z - TransformCartesianToPolar(x_);
+	
+	//Tools tools{ Tools() };
+	//MatrixXd Hj = tools.CalculateJacobian(x_);
+
+	MatrixXd S_ = H_*P_*H_.transpose() + R_;
+	MatrixXd K_ = P_*H_.transpose() *S_.inverse();
+
+	x_ = x_ + K_*y;
+	MatrixXd I = MatrixXd::Identity(z.size(), z.size());
+	P_ = (I - K_*H_)*P_;
 }

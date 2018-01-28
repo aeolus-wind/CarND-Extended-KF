@@ -3,6 +3,7 @@
 #include <vector>
 #include "Eigen/Dense"
 #include <exception>
+#include <cmath>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -41,6 +42,8 @@ double SumSquare(const double px, const double py);
 void CannotDivideByZero(const double r2);
 
 void InputHasNoNulls(const VectorXd& x_state);
+
+inline bool isEqual(double x, double y);
 
 
 class WrongDimInputException : public exception {
