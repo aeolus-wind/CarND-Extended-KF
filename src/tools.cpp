@@ -17,11 +17,19 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   TODO:
     * Calculate the RMSE here.
   */
-	if (estimations.size() == 0 || ground_truth.size()==0)
+	if ((estimations.size() == 0 || ground_truth.size()==0) && (estimations.size()==ground_truth.size()))
 		throw WrongDimInputException();
+	VectorXd RMSE(4);
+	RMSE << 0, 0, 0, 0;
+	for (unsigned int i = 0; i < estimations.size(); i++) {
+		VectorXd res = estimations[i] - ground_truth[i];
+		res = res.array() * res.array();
 
-	VectorXd x;
-	return x;
+		RMSE += res;
+	}
+	RMSE = RMSE / estimations.size();
+	RMSE = RMSE.array().sqrt();
+	return RMSE;
 }
 
 MatrixXd Tools::Jacobian( const double px, const double py, const double vx, const double vy) {
