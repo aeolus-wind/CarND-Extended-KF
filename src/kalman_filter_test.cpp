@@ -45,8 +45,8 @@ TEST_F(TestEigenDecompositionMatrix, GenerateEigenDecompositionReturnsOriginalAf
 
 
 
-
-TEST_F(TestEigenDecompositionMatrix, DrawFromMultivariateGaussianMeanZeroReturns4dVector) {
+/*
+TEST_F(TestEigenDecompositionMatrix, DISABLED_DrawFromMultivariateGaussianMeanZeroReturns4dVector) {
 	EigenvalueMatrix.resize(4,4);
 	EigenvalueMatrix << 1, 0, 0, 0,
 						0, 2, 0, 0,
@@ -55,6 +55,7 @@ TEST_F(TestEigenDecompositionMatrix, DrawFromMultivariateGaussianMeanZeroReturns
 	cout << "eigen decomp is" << kf.GenerateEigenDecomposition(EigenvalueMatrix) << endl;
 	ASSERT_EQ(kf.DrawFromMultivariateGaussianMeanZero(EigenvalueMatrix).size(), 4);
 }
+*/
 
 
 TEST_F(TestEigenDecompositionMatrix, GenerateEigenDecompositionThrowsExceptionIfInputNotPositiveSemiDefinite) {

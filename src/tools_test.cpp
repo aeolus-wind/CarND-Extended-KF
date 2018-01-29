@@ -2,7 +2,7 @@
 #include "gmock/gmock.h"  
 #include "tools.h"
 #include <exception>
-#include <boost/random/mersenne_twister.hpp>
+
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using std::vector;
@@ -108,9 +108,9 @@ TEST_F(InputVectorsForRMSETests, RMSEFunctionPassesBasicExample) {
 	VectorXd expected(4);
 	expected << 0.1, 0.1, 0.1, 0.1;
 
-	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(0), DoubleEq(expected(0), 1e-17));
-	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(1), DoubleEq(expected(1), 1e-17));
-	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(2), DoubleEq(expected(2), 1e-17));
+	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(0), DoubleEq(expected(0)));
+	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(1), DoubleEq(expected(1)));
+	ASSERT_THAT(tool.CalculateRMSE(estimations, ground_truth)(2), DoubleEq(expected(2)));
 }
 
 int main(int argc, char** argv)

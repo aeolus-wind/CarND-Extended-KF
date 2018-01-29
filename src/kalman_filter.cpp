@@ -1,10 +1,10 @@
 #include "kalman_filter.h"
 #include "tools.h"
 #include <iostream>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
 #include <random>
 #include <cmath>
+//#include <boost/random/mersenne_twister.hpp>
+//#include <boost/random/normal_distribution.hpp>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -68,6 +68,7 @@ MatrixXd KalmanFilter::GenerateEigenDecomposition(const MatrixXd &Q) {
 	return eigensolver.eigenvectors()*eigensolver.eigenvalues().cwiseSqrt().asDiagonal();
 }
 
+/*
 VectorXd KalmanFilter::DrawFromMultivariateGaussianMeanZero(const MatrixXd &Q) {
 	static boost::mt19937 rng{ std::random_device{}() };
 	static boost::normal_distribution<> dist;
@@ -76,6 +77,7 @@ VectorXd KalmanFilter::DrawFromMultivariateGaussianMeanZero(const MatrixXd &Q) {
 
 	return GenerateEigenDecomposition(Q)*VectorXd { 4 }.unaryExpr([&](auto x) {return dist(rng); });
 }
+*/
 
 
 
@@ -83,9 +85,11 @@ void KalmanFilter::PredictDeterministic() {
 	x_ = F_*x_;
 	P_ = F_*P_*F_.transpose() + Q_;
 }
+/*
 void KalmanFilter::PredictNonDeterministic() {
 	x_ = x_ + DrawFromMultivariateGaussianMeanZero(Q_);
 }
+*/
 
 void KalmanFilter::Predict() {
 	 PredictDeterministic();
