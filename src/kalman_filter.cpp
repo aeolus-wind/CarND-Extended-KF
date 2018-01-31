@@ -55,7 +55,6 @@ MatrixXd KalmanFilter::GenerateEigenDecomposition(const MatrixXd &Q) {
 	
 	SelfAdjointEigenSolver<MatrixXd> eigensolver(Q);
 
-	//cout << "does this work?" << (eigensolver.eigenvalues() < 0).any();
 
 	for (int i = 0; i < eigensolver.eigenvalues().size(); i++) {
 
@@ -99,14 +98,14 @@ void KalmanFilter::Predict() {
 
 void KalmanFilter::Update(const VectorXd &z) {
 
-	VectorXd y(2);
-	y = z - (H_*x_);
-	MatrixXd S_(4, 4);
-	S_ = H_*P_*H_.transpose() + R_;
-	MatrixXd K_(4, 4);
-	K_ = P_*H_.transpose()*S_.inverse();
+
+	//VectorXd y(z_size);
+	VectorXd y = z - (H_*x_);
+	MatrixXd S_ = H_*P_*H_.transpose() + R_;
+	MatrixXd K_ = P_*H_.transpose()*S_.inverse();
 	x_ = x_ + (K_*y);
-	MatrixXd I = MatrixXd::Identity(4,4);
+	int x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K_*H_)*P_;
 
 }
@@ -115,8 +114,11 @@ void KalmanFilter::Update(const VectorXd &z) {
 VectorXd KalmanFilter::CartesianToPolar(double px, double py, double vx, double vy) {
 	VectorXd PolarVector(3);
 	double r2 = SumSquare(px, py);
-	double phi = atan(py / px);
-	PolarVector << pow(r2, 0.5), phi, (px*vx + py*vx) / pow(r2, 0.5);
+	CannotDivideByZero(px);
+	CannotDivideByZero(r2);
+	double phi = atan2(py , px);
+	
+	PolarVector << sqrt(r2), phi, (px*vx + py*vy) / sqrt(r2);
 
 	return PolarVector;
 }
@@ -131,11 +133,13 @@ VectorXd KalmanFilter::TransformPolarToCartesian(const Eigen::VectorXd &PolarVec
 }
 
 double NormalizeRadianBetweenPiMinusPi(double phi) {
+
 	while (phi > M_PI) {
-		phi -= 2 * M_PI;
+		phi -=  2.0*M_PI;
 	}
+	
 	while (phi < -M_PI) {
-		phi += 2 * M_PI;
+		phi +=  2.0*M_PI;
 	}
 
 	return phi;
@@ -161,6 +165,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   */
 
 	VectorXd y = z - TransformCartesianToPolar(x_);
+	y(1) = NormalizeRadianBetweenPiMinusPi(y(1));
+	
 	
 	//Tools tools{ Tools() };
 	//MatrixXd Hj = tools.CalculateJacobian(x_);
@@ -169,6 +175,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	MatrixXd K_ = P_*H_.transpose() *S_.inverse();
 
 	x_ = x_ + K_*y;
-	MatrixXd I = MatrixXd::Identity(z.size(), z.size());
+	MatrixXd I = MatrixXd::Identity(x_.size(), x_.size());
 	P_ = (I - K_*H_)*P_;
 }

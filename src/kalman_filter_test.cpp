@@ -47,18 +47,18 @@ TEST_F(TestEigenDecompositionMatrix, GenerateEigenDecompositionReturnsOriginalAf
 
 /*
 TEST_F(TestEigenDecompositionMatrix, DISABLED_DrawFromMultivariateGaussianMeanZeroReturns4dVector) {
-	EigenvalueMatrix.resize(4,4);
-	EigenvalueMatrix << 1, 0, 0, 0,
-						0, 2, 0, 0,
-						0, 0, 3, 0,
-						0, 0, 0, 4;
-	cout << "eigen decomp is" << kf.GenerateEigenDecomposition(EigenvalueMatrix) << endl;
-	ASSERT_EQ(kf.DrawFromMultivariateGaussianMeanZero(EigenvalueMatrix).size(), 4);
+EigenvalueMatrix.resize(4,4);
+EigenvalueMatrix << 1, 0, 0, 0,
+0, 2, 0, 0,
+0, 0, 3, 0,
+0, 0, 0, 4;
+cout << "eigen decomp is" << kf.GenerateEigenDecomposition(EigenvalueMatrix) << endl;
+ASSERT_EQ(kf.DrawFromMultivariateGaussianMeanZero(EigenvalueMatrix).size(), 4);
 }
 */
 
 
-TEST_F(TestEigenDecompositionMatrix, GenerateEigenDecompositionThrowsExceptionIfInputNotPositiveSemiDefinite) {
+TEST_F(TestEigenDecompositionMatrix, DISABLED_GenerateEigenDecompositionThrowsExceptionIfInputNotPositiveSemiDefinite) {
 	EigenvalueMatrix.resize(2, 2);
 	EigenvalueMatrix << 1, 2, 3, 4;
 
@@ -66,14 +66,14 @@ TEST_F(TestEigenDecompositionMatrix, GenerateEigenDecompositionThrowsExceptionIf
 }
 
 
-
 TEST(TestPredictDimInput, DISABLED_GenerateEigenDecompositionThrowsWrongDimInputExceptionIfInputNot4x4) {
 	KalmanFilter kf;
-	MatrixXd ProcessCovMatrix(2,2);
+	MatrixXd ProcessCovMatrix(2, 2);
 	ProcessCovMatrix << 1, 0, 0, 4;
 	kf.Q_ = ProcessCovMatrix;
 	ASSERT_THROW(kf.Predict(), WrongDimInputException);
 }
+
 
 
 class KalmanFilterInvalidInitializationOnP_ : public Test {
@@ -162,18 +162,19 @@ TEST_F(KalmanFilterNonTrivialExample, NonTrivialExampleReturnsExpectedValueOnPre
 	VectorXd ExpectedAfterOnePredict(4);
 	ExpectedAfterOnePredict << 0.463227, 0.607415, 0, 0;
 	kf.PredictDeterministic();
-	ASSERT_EQ(kf.x_(0),ExpectedAfterOnePredict(0));
+	ASSERT_EQ(kf.x_(0), ExpectedAfterOnePredict(0));
 	ASSERT_EQ(kf.x_(1), ExpectedAfterOnePredict(1));
 	ASSERT_EQ(kf.x_(2), ExpectedAfterOnePredict(2));
 }
+
 
 TEST_F(KalmanFilterNonTrivialExample, NonTrivialExampleReturnsExpectedValueAfterUpdate) {
 	kf.Init(x_in, P_in, F_in, H_in, R_in, Q_in);
 	MatrixXd ExpectedP_AfterOneUpdate(4, 4);
 	ExpectedP_AfterOneUpdate << 0.022454071740052282, 0, 0.204131, 0,
-								0, 0.0224541, 0, 0.204131,
-								0.204131, 0, 92.7787, 0,
-								0, 0.204131, 0, 92.7787;
+		0, 0.0224541, 0, 0.204131,
+		0.204131, 0, 92.7787, 0,
+		0, 0.204131, 0, 92.7787;
 	kf.F_(0, 2) = dt;
 	kf.F_(1, 3) = dt;
 	kf.PredictDeterministic();
@@ -184,7 +185,6 @@ TEST_F(KalmanFilterNonTrivialExample, NonTrivialExampleReturnsExpectedValueAfter
 	ASSERT_DOUBLE_EQ(kf.P_(0, 0), ExpectedP_AfterOneUpdate(0, 0));
 	ASSERT_DOUBLE_EQ(kf.P_(0, 1), ExpectedP_AfterOneUpdate(0, 1));
 }
-
 
 
 class PolarTransformExamples : public Test {
@@ -202,7 +202,7 @@ TEST_F(PolarTransformExamples, TransformCartesianToPolarThrowsIfInputNotSize4) {
 	ASSERT_THROW(kf.TransformCartesianToPolar(SampleVelocity), WrongDimInputException);
 }
 
-TEST_F(PolarTransformExamples, TransformCartesianToPolarThrowsZeroDivideExceptionOnzeroVelocity) {
+TEST_F(PolarTransformExamples, TransformCartesianToPolarThrowsZeroDivideExceptionOnNearZeroVelocity) {
 	SampleVelocity.resize(4);
 	SampleVelocity << 0, 0, 0, 0;
 	ASSERT_THROW(kf.TransformCartesianToPolar(SampleVelocity), ZeroDivideException);
@@ -219,10 +219,10 @@ TEST_F(PolarTransformExamples, RadianValueIsBetweenPiAndMinusPi) {
 TEST_F(PolarTransformExamples, TransformCartesianToPolarPassesSimpleExample) {
 	//I think this needs to be after adding hx in the extended transform
 	SampleVelocity.resize(4);
-	SampleVelocity << 1, 1, 1, 1;
+	SampleVelocity << 1, 1, 2, 3;
 	VectorXd Expected;
 	Expected.resize(3);
-	Expected << pow(2, 0.5), M_PI / 4.0, 2.0 / pow(2, 0.5);
+	Expected << pow(2, 0.5), M_PI / 4.0, 5.0 / pow(2, 0.5);
 
 
 	//write a real example of this...
@@ -234,7 +234,7 @@ TEST_F(PolarTransformExamples, TransformPolarToCartesianPassesSimpleExample) {
 	SampleVelocity.resize(3);
 	SampleVelocity << 1.0, M_PI / 4.0, 1.0;
 	VectorXd ExpectedCartesianVelocity(4);
-	ExpectedCartesianVelocity << pow(2,0.5)/2 , pow(2, 0.5) / 2, pow(2, 0.5) / 2, pow(2, 0.5) / 2;
+	ExpectedCartesianVelocity << pow(2, 0.5) / 2, pow(2, 0.5) / 2, pow(2, 0.5) / 2, pow(2, 0.5) / 2;
 	cout << kf.TransformPolarToCartesian(SampleVelocity)(0) << endl;
 
 	ASSERT_THAT(kf.TransformPolarToCartesian(SampleVelocity)(0), testing::DoubleEq(ExpectedCartesianVelocity(0)));
@@ -290,7 +290,7 @@ public:
 		firstMeasurement.resize(2);
 		firstMeasurement << 0.968521, 0.40545;
 	}
- };
+};
 
 
 

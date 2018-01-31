@@ -17,7 +17,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   TODO:
     * Calculate the RMSE here.
   */
-	if ((estimations.size() == 0 || ground_truth.size()==0) && (estimations.size()==ground_truth.size()))
+	if (estimations.size() == 0 || (estimations.size() != ground_truth.size()))
 		throw WrongDimInputException();
 	VectorXd RMSE(4);
 	RMSE << 0, 0, 0, 0;
@@ -27,7 +27,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
 		RMSE += res;
 	}
-	RMSE = RMSE / estimations.size();
+	RMSE = (RMSE / estimations.size()) ;
 	RMSE = RMSE.array().sqrt();
 	return RMSE;
 }
@@ -97,5 +97,5 @@ void InputSizeIs4(const VectorXd& x_state) {
 }
 
 double SumSquare(const double px, const double py) {
-	return px*px + py*py;
+	return pow(px,2) + pow(py,2);
 }

@@ -23,7 +23,7 @@ public:
 
 
 
-TEST_F(InputVectorsForJacobianTests, JacobianRaisesExceptionForZeroDenominator) {
+TEST_F(InputVectorsForJacobianTests, JacobianRaisesExceptionForNearZeroDenominator) {
 	vectorXInput.resize(4);
 	vectorXInput << 0, 0, 1, 1;
 	ASSERT_THROW(tools.CalculateJacobian(vectorXInput), ZeroDivideException);
@@ -36,7 +36,7 @@ TEST_F(InputVectorsForJacobianTests, JacobianExpects4dVectorInput) {
 
 TEST_F(InputVectorsForJacobianTests, JacobianReturns3x4Matrix) {
 	vectorXInput.resize(4);
-	
+
 	ASSERT_THAT(tools.CalculateJacobian(vectorXInput).rows(), 3);
 	ASSERT_THAT(tools.CalculateJacobian(vectorXInput).cols(), 4);
 }
